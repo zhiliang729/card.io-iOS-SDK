@@ -1,7 +1,22 @@
+[![card.io logo](https://raw.githubusercontent.com/card-io/card.io-iOS-source/master/Resources/cardio_logo_220.png "card.io")](https://www.card.io)
+
 card.io SDK for iOS
 ===================
 
 [card.io](https://www.card.io/) provides fast, easy credit card scanning in mobile apps.
+
+> #### *NEW!!! card.io is now an open-source project!*
+> 
+> As of December 2014, all of the source code for card.io is now available at the [card.io-iOS-source repo](https://github.com/card-io/card.io-iOS-source).
+> 
+> ##### What does this mean for you?
+> 
+> * If you simply wish to integrate card.io into your mobile apps, then you can (and probably should) ignore the existence of [card.io-iOS-source](https://github.com/card-io/card.io-iOS-source).
+> * But if you're curious about how card.io performs its magic, or if you'd like to improve the appearance or behavior of card.io, then come visit [card.io-iOS-source](https://github.com/card-io/card.io-iOS-source)!
+
+Brought to you by  
+[![PayPal logo](https://raw.githubusercontent.com/card-io/card.io-iOS-source/master/Resources/pp_h_rgb.png)](https://paypal.com/ "PayPal")
+
 
 Stay up to date
 ---------------
@@ -23,7 +38,7 @@ Sample app
 For a quick first look at card.io, we have included a very small sample application that you can build and run.
 
 1. Download the latest version of the SDK.
-2. Simply open the `SampleApp` folder and follow the instructions in the `README.md` file you find there.
+2. Simply open the `SampleApp` folder or the `SampleApp-Swift` folder and follow the instructions in the `README.md` file you find there.
 
 
 Instructions
@@ -31,13 +46,20 @@ Instructions
 
 The card.io iOS SDK includes header files and a single static library. We'll walk you through integration and usage.
 
-*(Note: in the past, developers needed to sign up at the [card.io site](https://www.card.io) and obtain an* `app token`. *This is no longer required.)*
-
 ### Requirements
 
 *   Supports target deployment of iOS version 6.1+ and instruction set armv7+ (including 64-bit).
 
 ### Setup
+
+##### If you use [CocoaPods](http://cocoapods.org), then add these lines to your podfile:
+
+```ruby
+platform :ios, '6.1'
+pod 'CardIO'
+```
+
+##### If you don't use CocoaPods, then:
 
 1. Download the latest version of the SDK.
 2. Add the CardIO directory (containing several .h files and libCardIO.a) to your Xcode project.
@@ -65,9 +87,12 @@ The card.io iOS SDK includes header files and a single static library. We'll wal
   * and confirm that these two Build Settings are both enabled:
     * `Enable Modules (C and Objective-C)`
     * `Link Frameworks Automatically`
-6.  Add [card.io's open source license acknowledgments](acknowledgments.md) to
+
+##### With or without CocoaPods:
+
+1.  Add [card.io's open source license acknowledgments](acknowledgments.md) to
 [your app's acknowledgments](http://stackoverflow.com/questions/3966116/where-to-put-open-source-credit-information-for-an-iphone-app).
-7.  Refer to the header files for more usage options and information.
+2.  Refer to the header files for more usage options and information.
 
 ### Sample code
 
@@ -97,7 +122,7 @@ Make an optional call to speed up the subsequent launch of card.io scanning:
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  [CardIOPaymentViewController preload];
+  [CardIOUtilities preload];
 }
 
 ```
@@ -109,7 +134,7 @@ Start card.io card scanning:
 
 - (IBAction)scanCard:(id)sender {
   CardIOPaymentViewController *scanViewController = [[CardIOPaymentViewController alloc] initWithPaymentDelegate:self];
-  [self presentModalViewController:scanViewController animated:YES];
+  [self presentViewController:scanViewController animated:YES completion:nil];
 }
 ```
 
@@ -121,18 +146,20 @@ Write delegate methods to receive the card info or a cancellation:
 - (void)userDidCancelPaymentViewController:(CardIOPaymentViewController *)scanViewController {
   NSLog(@"User canceled payment info");
   // Handle user cancellation here...
-  [scanViewController dismissModalViewControllerAnimated:YES];
+  [scanViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)userDidProvideCreditCardInfo:(CardIOCreditCardInfo *)info inPaymentViewController:(CardIOPaymentViewController *)scanViewController {
   // The full card number is available as info.cardNumber, but don't log that!
   NSLog(@"Received card info. Number: %@, expiry: %02i/%i, cvv: %@.", info.redactedCardNumber, info.expiryMonth, info.expiryYear, info.cvv);
   // Use the card info...
-  [scanViewController dismissModalViewControllerAnimated:YES];
+  [scanViewController dismissViewControllerAnimated:YES completion:nil];
 }
 ```
 
 #### Integrate as a View
+
+*CardIOView is new as of card.io Version 3.3.0 (September 2013). We look forward to seeing how creative developers integrate it into their apps. If you do something cool with it, share it with [@cardio](https://twitter.com/cardio)! We also look forward to quickly resolving any issues that you may discover.*
 
 Create a class (most likely a subclass of `UIViewController`) that conforms to `CardIOViewDelegate`.
 
@@ -159,7 +186,7 @@ Confirm that the user's device is capable of scanning cards:
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  if (![CardIOView canReadCardWithCamera]) {
+  if (![CardIOUtilities canReadCardWithCamera]) {
     // Hide your "Scan Card" button, or take other appropriate action...
   }
 }
@@ -172,7 +199,7 @@ Make an optional call to speed up the subsequent launch of card.io scanning:
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  [CardIOView preload];
+  [CardIOUtilities preload];
 }
 
 ```
@@ -242,7 +269,7 @@ After confirming that the user's device is capable of scanning cards, set the `d
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  if (![CardIOView canReadCardWithCamera]) {
+  if (![CardIOUtilities canReadCardWithCamera]) {
     // Hide your "Scan Card" button, remove the CardIOView from your view, and/or take other appropriate action...
   } else {
     self.cardIOView.delegate = self;
@@ -257,7 +284,7 @@ Make an optional call to speed up the subsequent launch of card.io scanning:
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  [CardIOView preload];
+  [CardIOUtilities preload];
 }
 
 ```
@@ -308,4 +335,4 @@ Include a method to cancel card scanning:
 * Processing images can be memory intensive, so make sure to test that your app properly handles memory warnings.
 * For your users' security, [obscure your app's cached screenshots](https://viaforensics.com/resources/reports/best-practices-ios-android-secure-mobile-development/ios-avoid-cached-application-snapshots/).  
 **Note:** By default, a `CardIOPaymentViewController` automatically blurs its own screens when the app is backgrounded. A `CardIOView` does not do any automatic blurring.
-* The first time that you create either a `CardIOPaymentViewController` or a `CardIOView`, the card.io SDK must load resources, which can result in a noticeable delay. To avoid this delay you may optionally call the `preload` method (of either class) in advance, so that this resource loading occurs in advance on a background thread.
+* The first time that you create either a `CardIOPaymentViewController` or a `CardIOView`, the card.io SDK must load resources, which can result in a noticeable delay. To avoid this delay you may optionally call `[CardIOUtilities preload]` in advance, so that this resource loading occurs in advance on a background thread.
